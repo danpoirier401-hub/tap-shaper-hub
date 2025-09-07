@@ -31,25 +31,19 @@ export function TapCard({ tap }: TapCardProps) {
           <img
             src={beverage.label}
             alt={`${beverage.name} label`}
-            className="w-20 h-20 object-contain rounded"
+            className="w-16 h-16 object-contain rounded"
           />
         </div>
       )}
       
-      <div className="flex-1 space-y-2">
+      <div className="flex-1 space-y-1">
         <h3 className="text-xl font-bold text-gold">{beverage.name}</h3>
         {beverage.brewery && (
           <p className="text-sm text-muted-foreground">{beverage.brewery}</p>
         )}
-        <div className="flex items-center gap-3">
-          {beverage.style && (
-            <Badge variant="outline" className="style-badge">
-              {beverage.style}
-            </Badge>
-          )}
-          {beverage.abv && (
-            <span className="text-sm text-muted-foreground">{beverage.abv}% ABV</span>
-          )}
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          {beverage.style && <span>{beverage.style}</span>}
+          {beverage.abv && <span>{beverage.abv}% ABV</span>}
         </div>
         {beverage.description && (
           <p className="text-sm text-foreground/80 mt-3 leading-relaxed">

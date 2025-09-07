@@ -21,12 +21,6 @@ const Index = () => {
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="hero-title mb-4">{settings.title}</h1>
-            <p className="text-xl text-muted-foreground">
-              {activeTaps.length > 0 
-                ? `Featuring ${activeTaps.length} tap${activeTaps.length === 1 ? '' : 's'} currently flowing`
-                : 'No taps currently active'
-              }
-            </p>
           </div>
           
           {/* Tap Grid */}
