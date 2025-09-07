@@ -16,7 +16,7 @@ export function useTaplistData() {
     { id: 4, isActive: false },
   ]);
   const [settings, setSettings] = useState<TaplistSettings>({
-    title: 'Home Bar Taplist',
+    title: 'Welcome To Two Rotten Brewing',
   });
 
   // Load data from localStorage on mount
