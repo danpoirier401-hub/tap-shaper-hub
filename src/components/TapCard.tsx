@@ -25,46 +25,38 @@ export function TapCard({ tap }: TapCardProps) {
   }
 
   return (
-    <Card className="tap-card-active">
-      <div className="p-6">
-        <div className="mb-4 flex justify-between items-start">
-          <Badge variant="outline" className="tap-number">
-            Tap {id}
-          </Badge>
-          {beverage.abv && (
-            <Badge variant="secondary" className="abv-badge">
-              {beverage.abv}% ABV
-            </Badge>
-          )}
+    <div className="flex items-start gap-6 p-4 bg-transparent">
+      {beverage.label && (
+        <div className="flex-shrink-0">
+          <img
+            src={beverage.label}
+            alt={`${beverage.name} label`}
+            className="w-20 h-20 object-contain rounded"
+          />
         </div>
-        
-        {beverage.label && (
-          <div className="mb-4">
-            <img
-              src={beverage.label}
-              alt={`${beverage.name} label`}
-              className="w-full h-32 object-contain rounded"
-            />
-          </div>
+      )}
+      
+      <div className="flex-1 space-y-2">
+        <h3 className="text-xl font-bold text-gold">{beverage.name}</h3>
+        {beverage.brewery && (
+          <p className="text-sm text-muted-foreground">{beverage.brewery}</p>
         )}
-        
-        <div className="space-y-2">
-          <h3 className="text-xl font-bold text-gold">{beverage.name}</h3>
-          {beverage.brewery && (
-            <p className="text-sm text-muted-foreground">{beverage.brewery}</p>
-          )}
+        <div className="flex items-center gap-3">
           {beverage.style && (
             <Badge variant="outline" className="style-badge">
               {beverage.style}
             </Badge>
           )}
-          {beverage.description && (
-            <p className="text-sm text-foreground/80 mt-3 leading-relaxed">
-              {beverage.description}
-            </p>
+          {beverage.abv && (
+            <span className="text-sm text-muted-foreground">{beverage.abv}% ABV</span>
           )}
         </div>
+        {beverage.description && (
+          <p className="text-sm text-foreground/80 mt-3 leading-relaxed">
+            {beverage.description}
+          </p>
+        )}
       </div>
-    </Card>
+    </div>
   );
 }
