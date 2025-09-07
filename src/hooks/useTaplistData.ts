@@ -1,0 +1,105 @@
+import { useState, useEffect } from 'react';
+import { Beverage, Tap, TaplistSettings } from '@/types/taplist';
+
+const STORAGE_KEYS = {
+  BEVERAGES: 'taplist_beverages',
+  TAPS: 'taplist_taps',
+  SETTINGS: 'taplist_settings',
+};
+
+export function useTaplistData() {
+  const [beverages, setBeverages] = useState<Beverage[]>([]);
+  const [taps, setTaps] = useState<Tap[]>([
+    { id: 1, isActive: false },
+    { id: 2, isActive: false },
+    { id: 3, isActive: false },
+    { id: 4, isActive: false },
+  ]);
+  const [settings, setSettings] = useState<TaplistSettings>({
+    title: 'Home Bar Taplist',
+  });
+
+  // Load data from localStorage on mount
+  useEffect(() => {
+    const savedBeverages = localStorage.getItem(STORAGE_KEYS.BEVERAGES);
+    const savedTaps = localStorage.getItem(STORAGE_KEYS.TAPS);
+    const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+
+    if (savedBeverages) {
+      setBeverages(JSON.parse(savedBeverages));
+    }
+    if (savedTaps) {
+      setTaps(JSON.parse(savedTaps));
+    }
+    if (savedSettings) {
+      setSettings(JSON.parse(savedSettings));
+    }
+  }, []);
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.BEVERAGES, JSON.stringify(beverages));
+  }, [beverages]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.TAPS, JSON.stringify(taps));
+  }, [taps]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+  }, [settings]);
+
+  const addBeverage = (beverage: Omit<Beverage, 'id'>) => {
+    const newBeverage: Beverage = {
+      ...beverage,
+      id: Date.now().toString(),
+    };
+    setBeverages(prev => [...prev, newBeverage]);
+  };
+
+  const updateBeverage = (id: string, updates: Partial<Beverage>) => {
+    setBeverages(prev =>
+      prev.map(beverage =>
+        beverage.id === id ? { ...beverage, ...updates } : beverage
+      )
+    );
+  };
+
+  const deleteBeverage = (id: string) => {
+    setBeverages(prev => prev.filter(beverage => beverage.id !== id));
+    // Remove from taps if assigned
+    setTaps(prev =>
+      prev.map(tap =>
+        tap.beverage?.id === id
+          ? { ...tap, beverage: undefined, isActive: false }
+          : tap
+      )
+    );
+  };
+
+  const assignToTap = (tapId: number, beverageId?: string) => {
+    const beverage = beverageId ? beverages.find(b => b.id === beverageId) : undefined;
+    setTaps(prev =>
+      prev.map(tap =>
+        tap.id === tapId
+          ? { ...tap, beverage, isActive: !!beverage }
+          : tap
+      )
+    );
+  };
+
+  const updateSettings = (newSettings: Partial<TaplistSettings>) => {
+    setSettings(prev => ({ ...prev, ...newSettings }));
+  };
+
+  return {
+    beverages,
+    taps,
+    settings,
+    addBeverage,
+    updateBeverage,
+    deleteBeverage,
+    assignToTap,
+    updateSettings,
+  };
+}
