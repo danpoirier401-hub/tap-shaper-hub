@@ -21,45 +21,63 @@ export function useTaplistData() {
 
   // Load data from localStorage on mount
   useEffect(() => {
-    const savedBeverages = localStorage.getItem(STORAGE_KEYS.BEVERAGES);
-    const savedTaps = localStorage.getItem(STORAGE_KEYS.TAPS);
-    const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+    try {
+      // Clear potentially corrupted data first
+      const savedBeverages = localStorage.getItem(STORAGE_KEYS.BEVERAGES);
+      const savedTaps = localStorage.getItem(STORAGE_KEYS.TAPS);
+      const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
 
-    if (savedBeverages) {
-      setBeverages(JSON.parse(savedBeverages));
-    }
-    if (savedTaps) {
-      setTaps(JSON.parse(savedTaps));
-    }
-    if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
+      if (savedBeverages) {
+        setBeverages(JSON.parse(savedBeverages));
+      }
+      if (savedTaps) {
+        setTaps(JSON.parse(savedTaps));
+      }
+      if (savedSettings) {
+        setSettings(JSON.parse(savedSettings));
+      }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error);
+      // Clear corrupted data
+      localStorage.removeItem(STORAGE_KEYS.BEVERAGES);
+      localStorage.removeItem(STORAGE_KEYS.TAPS);
+      localStorage.removeItem(STORAGE_KEYS.SETTINGS);
     }
   }, []);
 
   // Save to localStorage whenever data changes
+  // Save to localStorage with debouncing to prevent quota exceeded
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.BEVERAGES, JSON.stringify(beverages));
-    } catch (error) {
-      console.error('Failed to save beverages to localStorage:', error);
-    }
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEYS.BEVERAGES, JSON.stringify(beverages));
+      } catch (error) {
+        console.error('Failed to save beverages to localStorage:', error);
+      }
+    }, 100);
+    return () => clearTimeout(timeoutId);
   }, [beverages]);
 
   useEffect(() => {
-    console.log('Saving taps to localStorage:', taps);
-    try {
-      localStorage.setItem(STORAGE_KEYS.TAPS, JSON.stringify(taps));
-    } catch (error) {
-      console.error('Failed to save taps to localStorage:', error);
-    }
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEYS.TAPS, JSON.stringify(taps));
+      } catch (error) {
+        console.error('Failed to save taps to localStorage:', error);
+      }
+    }, 100);
+    return () => clearTimeout(timeoutId);
   }, [taps]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
-    } catch (error) {
-      console.error('Failed to save settings to localStorage:', error);
-    }
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+      } catch (error) {
+        console.error('Failed to save settings to localStorage:', error);
+      }
+    }, 100);
+    return () => clearTimeout(timeoutId);
   }, [settings]);
 
   const addBeverage = (beverage: Omit<Beverage, 'id'>) => {
@@ -91,19 +109,14 @@ export function useTaplistData() {
   };
 
   const assignToTap = (tapId: number, beverageId?: string) => {
-    console.log('assignToTap called:', { tapId, beverageId });
     const beverage = beverageId ? beverages.find(b => b.id === beverageId) : undefined;
-    console.log('Found beverage:', beverage);
-    
-    setTaps(prev => {
-      const newTaps = prev.map(tap =>
+    setTaps(prev =>
+      prev.map(tap =>
         tap.id === tapId
           ? { ...tap, beverage, isActive: !!beverage }
           : tap
-      );
-      console.log('New taps state:', newTaps);
-      return newTaps;
-    });
+      )
+    );
   };
 
   const updateSettings = (newSettings: Partial<TaplistSettings>) => {
