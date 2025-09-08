@@ -38,15 +38,27 @@ export function useTaplistData() {
 
   // Save to localStorage whenever data changes
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.BEVERAGES, JSON.stringify(beverages));
+    try {
+      localStorage.setItem(STORAGE_KEYS.BEVERAGES, JSON.stringify(beverages));
+    } catch (error) {
+      console.error('Failed to save beverages to localStorage:', error);
+    }
   }, [beverages]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.TAPS, JSON.stringify(taps));
+    try {
+      localStorage.setItem(STORAGE_KEYS.TAPS, JSON.stringify(taps));
+    } catch (error) {
+      console.error('Failed to save taps to localStorage:', error);
+    }
   }, [taps]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    try {
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    } catch (error) {
+      console.error('Failed to save settings to localStorage:', error);
+    }
   }, [settings]);
 
   const addBeverage = (beverage: Omit<Beverage, 'id'>) => {
@@ -78,14 +90,14 @@ export function useTaplistData() {
   };
 
   const assignToTap = (tapId: number, beverageId?: string) => {
-    const beverage = beverageId ? beverages.find(b => b.id === beverageId) : undefined;
-    setTaps(prev =>
-      prev.map(tap =>
+    setTaps(prev => {
+      const beverage = beverageId ? beverages.find(b => b.id === beverageId) : undefined;
+      return prev.map(tap =>
         tap.id === tapId
           ? { ...tap, beverage, isActive: !!beverage }
           : tap
-      )
-    );
+      );
+    });
   };
 
   const updateSettings = (newSettings: Partial<TaplistSettings>) => {
