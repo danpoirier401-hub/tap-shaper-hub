@@ -109,14 +109,19 @@ export function useTaplistData() {
   };
 
   const assignToTap = (tapId: number, beverageId?: string) => {
-    const beverage = beverageId ? beverages.find(b => b.id === beverageId) : undefined;
-    setTaps(prev =>
-      prev.map(tap =>
-        tap.id === tapId
-          ? { ...tap, beverage, isActive: !!beverage }
-          : tap
-      )
-    );
+    setBeverages(currentBeverages => {
+      const beverage = beverageId ? currentBeverages.find(b => b.id === beverageId) : undefined;
+      
+      setTaps(prev =>
+        prev.map(tap =>
+          tap.id === tapId
+            ? { ...tap, beverage, isActive: !!beverage }
+            : tap
+        )
+      );
+      
+      return currentBeverages; // Return the same beverages array unchanged
+    });
   };
 
   const updateSettings = (newSettings: Partial<TaplistSettings>) => {
