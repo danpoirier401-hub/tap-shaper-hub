@@ -46,6 +46,7 @@ export function useTaplistData() {
   }, [beverages]);
 
   useEffect(() => {
+    console.log('Saving taps to localStorage:', taps);
     try {
       localStorage.setItem(STORAGE_KEYS.TAPS, JSON.stringify(taps));
     } catch (error) {
@@ -90,14 +91,19 @@ export function useTaplistData() {
   };
 
   const assignToTap = (tapId: number, beverageId?: string) => {
+    console.log('assignToTap called:', { tapId, beverageId });
     const beverage = beverageId ? beverages.find(b => b.id === beverageId) : undefined;
-    setTaps(prev =>
-      prev.map(tap =>
+    console.log('Found beverage:', beverage);
+    
+    setTaps(prev => {
+      const newTaps = prev.map(tap =>
         tap.id === tapId
           ? { ...tap, beverage, isActive: !!beverage }
           : tap
-      )
-    );
+      );
+      console.log('New taps state:', newTaps);
+      return newTaps;
+    });
   };
 
   const updateSettings = (newSettings: Partial<TaplistSettings>) => {
