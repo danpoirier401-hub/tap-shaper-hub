@@ -90,14 +90,14 @@ export function useTaplistData() {
   };
 
   const assignToTap = (tapId: number, beverageId?: string) => {
-    setTaps(prev => {
-      const beverage = beverageId ? beverages.find(b => b.id === beverageId) : undefined;
-      return prev.map(tap =>
+    const beverage = beverageId ? beverages.find(b => b.id === beverageId) : undefined;
+    setTaps(prev =>
+      prev.map(tap =>
         tap.id === tapId
           ? { ...tap, beverage, isActive: !!beverage }
           : tap
-      );
-    });
+      )
+    );
   };
 
   const updateSettings = (newSettings: Partial<TaplistSettings>) => {
