@@ -10,6 +10,12 @@ interface TaplistData {
   settings: TaplistSettings;
 }
 
+const STORAGE_KEYS = {
+  BEVERAGES: 'taplist_beverages',
+  TAPS: 'taplist_taps',
+  SETTINGS: 'taplist_settings',
+};
+
 export function useTaplistData() {
   const [beverages, setBeverages] = useState<Beverage[]>([]);
   const [taps, setTaps] = useState<Tap[]>([
@@ -23,14 +29,19 @@ export function useTaplistData() {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from API on mount
+  // Load data on mount
   useEffect(() => {
-    loadFromAPI();
+    loadData();
   }, []);
 
-  const loadFromAPI = async () => {
+  const loadData = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/taplist`);
+      // Try API first
+      const response = await fetch(`${API_BASE_URL}/api/taplist`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(3000), // 3 second timeout
+      });
+      
       if (response.ok) {
         const data: TaplistData = await response.json();
         setBeverages(data.beverages || []);
@@ -41,10 +52,12 @@ export function useTaplistData() {
           { id: 4, isActive: false },
         ]);
         setSettings(data.settings || { title: 'Welcome To Two Rotten Brewing' });
+      } else {
+        throw new Error('API response not ok');
       }
     } catch (error) {
-      console.error('Failed to load from API:', error);
-      // Fallback to localStorage if API fails
+      console.log('API not available, using localStorage');
+      // Fallback to localStorage
       loadFromLocalStorage();
     } finally {
       setIsLoading(false);
@@ -53,19 +66,30 @@ export function useTaplistData() {
 
   const loadFromLocalStorage = () => {
     try {
-      const savedBeverages = localStorage.getItem('taplist_beverages');
-      const savedTaps = localStorage.getItem('taplist_taps');
-      const savedSettings = localStorage.getItem('taplist_settings');
+      const savedBeverages = localStorage.getItem(STORAGE_KEYS.BEVERAGES);
+      const savedTaps = localStorage.getItem(STORAGE_KEYS.TAPS);
+      const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
 
-      if (savedBeverages) setBeverages(JSON.parse(savedBeverages));
-      if (savedTaps) setTaps(JSON.parse(savedTaps));
-      if (savedSettings) setSettings(JSON.parse(savedSettings));
+      if (savedBeverages) {
+        setBeverages(JSON.parse(savedBeverages));
+      }
+      if (savedTaps) {
+        setTaps(JSON.parse(savedTaps));
+      }
+      if (savedSettings) {
+        setSettings(JSON.parse(savedSettings));
+      }
     } catch (error) {
       console.error('Error loading from localStorage:', error);
+      // Clear corrupted data
+      localStorage.removeItem(STORAGE_KEYS.BEVERAGES);
+      localStorage.removeItem(STORAGE_KEYS.TAPS);
+      localStorage.removeItem(STORAGE_KEYS.SETTINGS);
     }
   };
 
-  const saveToAPI = async (data: TaplistData) => {
+  const saveData = async (data: TaplistData) => {
+    // Try API first
     try {
       await fetch(`${API_BASE_URL}/api/taplist`, {
         method: 'POST',
@@ -73,25 +97,27 @@ export function useTaplistData() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
+        signal: AbortSignal.timeout(3000), // 3 second timeout
       });
     } catch (error) {
-      console.error('Failed to save to API:', error);
-      // Fallback to localStorage if API fails
-      try {
-        localStorage.setItem('taplist_beverages', JSON.stringify(data.beverages));
-        localStorage.setItem('taplist_taps', JSON.stringify(data.taps));
-        localStorage.setItem('taplist_settings', JSON.stringify(data.settings));
-      } catch (localError) {
-        console.error('Failed to save to localStorage:', localError);
-      }
+      console.log('API save failed, using localStorage');
+    }
+    
+    // Always save to localStorage as backup
+    try {
+      localStorage.setItem(STORAGE_KEYS.BEVERAGES, JSON.stringify(data.beverages));
+      localStorage.setItem(STORAGE_KEYS.TAPS, JSON.stringify(data.taps));
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(data.settings));
+    } catch (error) {
+      console.error('Failed to save to localStorage:', error);
     }
   };
 
-  // Save to API whenever data changes (with debouncing)
+  // Save data whenever state changes (with debouncing)
   useEffect(() => {
     if (isLoading) return;
     const timeoutId = setTimeout(() => {
-      saveToAPI({ beverages, taps, settings });
+      saveData({ beverages, taps, settings });
     }, 500);
     return () => clearTimeout(timeoutId);
   }, [beverages, taps, settings, isLoading]);
