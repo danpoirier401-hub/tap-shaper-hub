@@ -47,10 +47,6 @@ const Index = () => {
             </div>
           )}
           
-          {/* Footer */}
-          <div className="text-center mt-16 text-muted-foreground">
-            <p>Last updated: {new Date().toLocaleString()}</p>
-          </div>
         </div>
       </div>
     </div>
