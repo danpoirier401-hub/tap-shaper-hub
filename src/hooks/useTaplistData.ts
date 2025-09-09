@@ -103,13 +103,28 @@ export function useTaplistData() {
       console.log('API save failed, using localStorage');
     }
     
-    // Always save to localStorage as backup
+    // Always save to localStorage as backup, but handle quota errors
     try {
       localStorage.setItem(STORAGE_KEYS.BEVERAGES, JSON.stringify(data.beverages));
       localStorage.setItem(STORAGE_KEYS.TAPS, JSON.stringify(data.taps));
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(data.settings));
     } catch (error) {
-      console.error('Failed to save to localStorage:', error);
+      if (error.name === 'QuotaExceededError') {
+        // Clear localStorage and try again with essential data only
+        console.log('Storage quota exceeded, clearing and saving essential data only');
+        localStorage.clear();
+        try {
+          // Save beverages without images to save space
+          const lightBeverages = data.beverages.map(b => ({ ...b, label: undefined }));
+          localStorage.setItem(STORAGE_KEYS.BEVERAGES, JSON.stringify(lightBeverages));
+          localStorage.setItem(STORAGE_KEYS.TAPS, JSON.stringify(data.taps));
+          localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(data.settings));
+        } catch (retryError) {
+          console.error('Failed to save even after clearing localStorage:', retryError);
+        }
+      } else {
+        console.error('Failed to save to localStorage:', error);
+      }
     }
   };
 
