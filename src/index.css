@@ -157,6 +157,6 @@ All colors MUST be HSL.
   }
   
   .hero-title {
-    @apply text-6xl font-bold bg-gradient-to-r from-gold to-copper bg-clip-text text-transparent;
+    @apply text-5xl md:text-6xl font-bold bg-gradient-to-r from-gold to-copper bg-clip-text text-transparent leading-tight;
   }
 }
