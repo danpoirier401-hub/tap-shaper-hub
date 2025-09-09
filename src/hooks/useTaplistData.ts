@@ -109,29 +109,15 @@ export function useTaplistData() {
   };
 
   const assignToTap = (tapId: number, beverageId?: string) => {
-    console.log('assignToTap called with:', { tapId, beverageId });
-    console.log('Current beverages:', beverages);
-    console.log('Current taps before update:', taps);
+    const beverage = beverageId ? beverages.find(b => b.id === beverageId) : undefined;
     
-    setBeverages(currentBeverages => {
-      const beverage = beverageId ? currentBeverages.find(b => b.id === beverageId) : undefined;
-      console.log('Found beverage for tap', tapId, ':', beverage);
-      
-      setTaps(prev => {
-        const newTaps = prev.map(tap => {
-          if (tap.id === tapId) {
-            const updatedTap = { ...tap, beverage, isActive: !!beverage };
-            console.log(`Updating tap ${tapId}:`, updatedTap);
-            return updatedTap;
-          }
-          return tap;
-        });
-        console.log('New taps array:', newTaps);
-        return newTaps;
-      });
-      
-      return currentBeverages; // Return the same beverages array unchanged
-    });
+    setTaps(prev =>
+      prev.map(tap =>
+        tap.id === tapId
+          ? { ...tap, beverage, isActive: !!beverage }
+          : tap
+      )
+    );
   };
 
   const updateSettings = (newSettings: Partial<TaplistSettings>) => {
