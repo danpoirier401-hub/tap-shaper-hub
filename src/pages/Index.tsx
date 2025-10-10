@@ -1,9 +1,23 @@
+import { useState } from 'react';
 import { useTaplistData } from '@/hooks/useTaplistData';
 import { TapCard } from '@/components/TapCard';
+import { Button } from '@/components/ui/button';
+import { Maximize, Minimize } from 'lucide-react';
 
 const Index = () => {
   const { taps, settings } = useTaplistData();
   const activeTaps = taps.filter(tap => tap.isActive && tap.beverage);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
 
   return (
     <div className="min-h-screen relative">
@@ -57,6 +71,16 @@ const Index = () => {
           
         </div>
       </div>
+
+      {/* Fullscreen Toggle Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggleFullscreen}
+        className="fixed bottom-4 right-4 z-50 bg-background/80 backdrop-blur-sm hover:bg-background"
+      >
+        {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+      </Button>
     </div>
   );
 };

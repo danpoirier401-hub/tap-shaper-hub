@@ -14,7 +14,113 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      beverages: {
+        Row: {
+          abv: number | null
+          brewery: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          label: string | null
+          name: string
+          style: string | null
+          type: string
+        }
+        Insert: {
+          abv?: number | null
+          brewery?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          label?: string | null
+          name: string
+          style?: string | null
+          type: string
+        }
+        Update: {
+          abv?: number | null
+          brewery?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          label?: string | null
+          name?: string
+          style?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
+      taplist_settings: {
+        Row: {
+          abv_color: string | null
+          background_image: string | null
+          beverage_name_color: string | null
+          brewery_color: string | null
+          description_color: string | null
+          font_family: string | null
+          id: string
+          style_color: string | null
+          title: string | null
+          title_color: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          abv_color?: string | null
+          background_image?: string | null
+          beverage_name_color?: string | null
+          brewery_color?: string | null
+          description_color?: string | null
+          font_family?: string | null
+          id?: string
+          style_color?: string | null
+          title?: string | null
+          title_color?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          abv_color?: string | null
+          background_image?: string | null
+          beverage_name_color?: string | null
+          brewery_color?: string | null
+          description_color?: string | null
+          font_family?: string | null
+          id?: string
+          style_color?: string | null
+          title?: string | null
+          title_color?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      taps: {
+        Row: {
+          beverage_id: string | null
+          id: number
+          is_active: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          beverage_id?: string | null
+          id: number
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          beverage_id?: string | null
+          id?: number
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "taps_beverage_id_fkey"
+            columns: ["beverage_id"]
+            isOneToOne: false
+            referencedRelation: "beverages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

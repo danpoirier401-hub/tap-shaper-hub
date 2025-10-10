@@ -1,184 +1,250 @@
 import { useState, useEffect } from 'react';
-import { Beverage, Tap, TaplistSettings } from '@/types/taplist';
-
-// Configure your IIS server URL here
-const API_BASE_URL = 'http://localhost:8080'; // Change this to your IIS server URL
-
-interface TaplistData {
-  beverages: Beverage[];
-  taps: Tap[];
-  settings: TaplistSettings;
-}
-
-const STORAGE_KEYS = {
-  BEVERAGES: 'taplist_beverages',
-  TAPS: 'taplist_taps',
-  SETTINGS: 'taplist_settings',
-};
+import { supabase } from '@/integrations/supabase/client';
+import type { Beverage, Tap, TaplistSettings } from '@/types/taplist';
 
 export function useTaplistData() {
   const [beverages, setBeverages] = useState<Beverage[]>([]);
-  const [taps, setTaps] = useState<Tap[]>([
-    { id: 1, isActive: false },
-    { id: 2, isActive: false },
-    { id: 3, isActive: false },
-    { id: 4, isActive: false },
-  ]);
+  const [taps, setTaps] = useState<Tap[]>([]);
   const [settings, setSettings] = useState<TaplistSettings>({
-    title: 'Welcome To Two Rotten Brewing',
+    title: 'On Tap',
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load data on mount
   useEffect(() => {
     loadData();
+    
+    // Subscribe to realtime changes for cross-device sync
+    const beveragesChannel = supabase
+      .channel('beverages-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'beverages' }, () => {
+        loadBeverages();
+      })
+      .subscribe();
+
+    const tapsChannel = supabase
+      .channel('taps-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'taps' }, () => {
+        loadTaps();
+      })
+      .subscribe();
+
+    const settingsChannel = supabase
+      .channel('settings-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'taplist_settings' }, () => {
+        loadSettings();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(beveragesChannel);
+      supabase.removeChannel(tapsChannel);
+      supabase.removeChannel(settingsChannel);
+    };
   }, []);
 
   const loadData = async () => {
-    try {
-      // Try API first
-      const response = await fetch(`${API_BASE_URL}/api/taplist`, {
-        method: 'GET',
-        signal: AbortSignal.timeout(3000), // 3 second timeout
-      });
-      
-      if (response.ok) {
-        const data: TaplistData = await response.json();
-        setBeverages(data.beverages || []);
-        setTaps(data.taps || [
-          { id: 1, isActive: false },
-          { id: 2, isActive: false },
-          { id: 3, isActive: false },
-          { id: 4, isActive: false },
-        ]);
-        setSettings(data.settings || { title: 'Welcome To Two Rotten Brewing' });
-      } else {
-        throw new Error('API response not ok');
-      }
-    } catch (error) {
-      console.log('API not available, using localStorage');
-      // Fallback to localStorage
-      loadFromLocalStorage();
-    } finally {
-      setIsLoading(false);
-    }
+    await Promise.all([loadBeverages(), loadTaps(), loadSettings()]);
+    setIsLoading(false);
   };
 
-  const loadFromLocalStorage = () => {
-    try {
-      const savedBeverages = localStorage.getItem(STORAGE_KEYS.BEVERAGES);
-      const savedTaps = localStorage.getItem(STORAGE_KEYS.TAPS);
-      const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-
-      if (savedBeverages) {
-        setBeverages(JSON.parse(savedBeverages));
-      }
-      if (savedTaps) {
-        setTaps(JSON.parse(savedTaps));
-      }
-      if (savedSettings) {
-        setSettings(JSON.parse(savedSettings));
-      }
-    } catch (error) {
-      console.error('Error loading from localStorage:', error);
-      // Clear corrupted data
-      localStorage.removeItem(STORAGE_KEYS.BEVERAGES);
-      localStorage.removeItem(STORAGE_KEYS.TAPS);
-      localStorage.removeItem(STORAGE_KEYS.SETTINGS);
-    }
-  };
-
-  const saveData = async (data: TaplistData) => {
-    // Try API first
-    try {
-      await fetch(`${API_BASE_URL}/api/taplist`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-        signal: AbortSignal.timeout(3000), // 3 second timeout
-      });
-    } catch (error) {
-      console.log('API save failed, using localStorage');
-    }
+  const loadBeverages = async () => {
+    const { data, error } = await supabase
+      .from('beverages')
+      .select('*')
+      .order('created_at', { ascending: true });
     
-    // Always save to localStorage as backup, but handle quota errors
-    try {
-      localStorage.setItem(STORAGE_KEYS.BEVERAGES, JSON.stringify(data.beverages));
-      localStorage.setItem(STORAGE_KEYS.TAPS, JSON.stringify(data.taps));
-      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(data.settings));
-    } catch (error) {
-      if (error.name === 'QuotaExceededError') {
-        // Clear localStorage and try again with essential data only
-        console.log('Storage quota exceeded, clearing and saving essential data only');
-        localStorage.clear();
-        try {
-          // Save beverages without images to save space
-          const lightBeverages = data.beverages.map(b => ({ ...b, label: undefined }));
-          localStorage.setItem(STORAGE_KEYS.BEVERAGES, JSON.stringify(lightBeverages));
-          localStorage.setItem(STORAGE_KEYS.TAPS, JSON.stringify(data.taps));
-          localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(data.settings));
-        } catch (retryError) {
-          console.error('Failed to save even after clearing localStorage:', retryError);
-        }
-      } else {
-        console.error('Failed to save to localStorage:', error);
-      }
+    if (error) {
+      console.error('Error loading beverages:', error);
+      return;
+    }
+
+    const formattedBeverages: Beverage[] = (data || []).map(b => ({
+      id: b.id,
+      name: b.name,
+      type: b.type as 'beer' | 'wine' | 'coffee' | 'other',
+      brewery: b.brewery || undefined,
+      abv: b.abv ? Number(b.abv) : undefined,
+      style: b.style || undefined,
+      description: b.description || undefined,
+      label: b.label || undefined,
+    }));
+
+    setBeverages(formattedBeverages);
+  };
+
+  const loadTaps = async () => {
+    const { data: tapsData, error: tapsError } = await supabase
+      .from('taps')
+      .select('id, beverage_id, is_active')
+      .order('id', { ascending: true });
+
+    if (tapsError) {
+      console.error('Error loading taps:', tapsError);
+      return;
+    }
+
+    const { data: beveragesData, error: beveragesError } = await supabase
+      .from('beverages')
+      .select('*');
+
+    if (beveragesError) {
+      console.error('Error loading beverages for taps:', beveragesError);
+      return;
+    }
+
+    const formattedTaps: Tap[] = (tapsData || []).map(t => {
+      const beverage = beveragesData?.find(b => b.id === t.beverage_id);
+      return {
+        id: t.id,
+        isActive: t.is_active,
+        beverage: beverage ? {
+          id: beverage.id,
+          name: beverage.name,
+          type: beverage.type as 'beer' | 'wine' | 'coffee' | 'other',
+          brewery: beverage.brewery || undefined,
+          abv: beverage.abv ? Number(beverage.abv) : undefined,
+          style: beverage.style || undefined,
+          description: beverage.description || undefined,
+          label: beverage.label || undefined,
+        } : undefined,
+      };
+    });
+
+    setTaps(formattedTaps);
+  };
+
+  const loadSettings = async () => {
+    const { data, error } = await supabase
+      .from('taplist_settings')
+      .select('*')
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error loading settings:', error);
+      return;
+    }
+
+    if (data) {
+      setSettings({
+        backgroundImage: data.background_image || undefined,
+        title: data.title || 'On Tap',
+        fontFamily: data.font_family || undefined,
+        titleColor: data.title_color || undefined,
+        beverageNameColor: data.beverage_name_color || undefined,
+        breweryColor: data.brewery_color || undefined,
+        styleColor: data.style_color || undefined,
+        abvColor: data.abv_color || undefined,
+        descriptionColor: data.description_color || undefined,
+      });
     }
   };
 
-  // Save data whenever state changes (with debouncing)
-  useEffect(() => {
-    if (isLoading) return;
-    const timeoutId = setTimeout(() => {
-      saveData({ beverages, taps, settings });
-    }, 500);
-    return () => clearTimeout(timeoutId);
-  }, [beverages, taps, settings, isLoading]);
+  const addBeverage = async (beverage: Omit<Beverage, 'id'>) => {
+    const { error } = await supabase
+      .from('beverages')
+      .insert({
+        name: beverage.name,
+        type: beverage.type,
+        brewery: beverage.brewery,
+        abv: beverage.abv,
+        style: beverage.style,
+        description: beverage.description,
+        label: beverage.label,
+      });
 
-  const addBeverage = (beverage: Omit<Beverage, 'id'>) => {
-    const newBeverage: Beverage = {
-      ...beverage,
-      id: Date.now().toString(),
-    };
-    setBeverages(prev => [...prev, newBeverage]);
+    if (error) {
+      console.error('Error adding beverage:', error);
+      return;
+    }
+
+    await loadBeverages();
   };
 
-  const updateBeverage = (id: string, updates: Partial<Beverage>) => {
-    setBeverages(prev =>
-      prev.map(beverage =>
-        beverage.id === id ? { ...beverage, ...updates } : beverage
-      )
-    );
+  const updateBeverage = async (id: string, updates: Partial<Beverage>) => {
+    const { error } = await supabase
+      .from('beverages')
+      .update({
+        name: updates.name,
+        type: updates.type,
+        brewery: updates.brewery,
+        abv: updates.abv,
+        style: updates.style,
+        description: updates.description,
+        label: updates.label,
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating beverage:', error);
+      return;
+    }
+
+    await loadBeverages();
   };
 
-  const deleteBeverage = (id: string) => {
-    setBeverages(prev => prev.filter(beverage => beverage.id !== id));
-    // Remove from taps if assigned
-    setTaps(prev =>
-      prev.map(tap =>
-        tap.beverage?.id === id
-          ? { ...tap, beverage: undefined, isActive: false }
-          : tap
-      )
-    );
+  const deleteBeverage = async (id: string) => {
+    const { error } = await supabase
+      .from('beverages')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting beverage:', error);
+      return;
+    }
+
+    await loadBeverages();
+    await loadTaps();
   };
 
-  const assignToTap = (tapId: number, beverageId?: string) => {
-    const beverage = beverageId ? beverages.find(b => b.id === beverageId) : undefined;
-    
-    setTaps(prev =>
-      prev.map(tap =>
-        tap.id === tapId
-          ? { ...tap, beverage, isActive: !!beverage }
-          : tap
-      )
-    );
+  const assignToTap = async (tapId: number, beverageId?: string) => {
+    const { error } = await supabase
+      .from('taps')
+      .update({ 
+        beverage_id: beverageId || null,
+        is_active: !!beverageId
+      })
+      .eq('id', tapId);
+
+    if (error) {
+      console.error('Error assigning to tap:', error);
+      return;
+    }
+
+    await loadTaps();
   };
 
-  const updateSettings = (newSettings: Partial<TaplistSettings>) => {
-    setSettings(prev => ({ ...prev, ...newSettings }));
+  const updateSettings = async (newSettings: Partial<TaplistSettings>) => {
+    const { data: existingSettings } = await supabase
+      .from('taplist_settings')
+      .select('id')
+      .limit(1)
+      .maybeSingle();
+
+    if (existingSettings) {
+      const { error } = await supabase
+        .from('taplist_settings')
+        .update({
+          background_image: newSettings.backgroundImage,
+          title: newSettings.title,
+          font_family: newSettings.fontFamily,
+          title_color: newSettings.titleColor,
+          beverage_name_color: newSettings.beverageNameColor,
+          brewery_color: newSettings.breweryColor,
+          style_color: newSettings.styleColor,
+          abv_color: newSettings.abvColor,
+          description_color: newSettings.descriptionColor,
+        })
+        .eq('id', existingSettings.id);
+
+      if (error) {
+        console.error('Error updating settings:', error);
+        return;
+      }
+    }
+
+    await loadSettings();
   };
 
   return {
