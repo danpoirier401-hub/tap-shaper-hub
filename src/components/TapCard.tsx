@@ -1,13 +1,16 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tap } from '@/types/taplist';
+import { Tap, TaplistSettings } from '@/types/taplist';
 
 interface TapCardProps {
   tap: Tap;
+  settings?: TaplistSettings;
 }
 
-export function TapCard({ tap }: TapCardProps) {
+export function TapCard({ tap, settings }: TapCardProps) {
   const { beverage, id } = tap;
+  
+  const fontStyle = settings?.fontFamily ? { fontFamily: settings.fontFamily } : {};
 
   if (!beverage) {
     return (
@@ -37,17 +40,38 @@ export function TapCard({ tap }: TapCardProps) {
           </div>
         )}
         
-        <div className="flex-1 space-y-1">
-          <h3 className="text-xl font-bold text-gold">{beverage.name}</h3>
+        <div className="flex-1 space-y-1" style={fontStyle}>
+          <h3 
+            className="text-xl font-bold text-gold" 
+            style={{ ...fontStyle, color: settings?.beverageNameColor }}
+          >
+            {beverage.name}
+          </h3>
           {beverage.brewery && (
-            <p className="text-sm text-muted-foreground">{beverage.brewery}</p>
+            <p 
+              className="text-sm text-muted-foreground" 
+              style={{ ...fontStyle, color: settings?.breweryColor }}
+            >
+              {beverage.brewery}
+            </p>
           )}
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            {beverage.style && <span>{beverage.style}</span>}
-            {beverage.abv && <span>{beverage.abv}% ABV</span>}
+            {beverage.style && (
+              <span style={{ ...fontStyle, color: settings?.styleColor }}>
+                {beverage.style}
+              </span>
+            )}
+            {beverage.abv && (
+              <span style={{ ...fontStyle, color: settings?.abvColor }}>
+                {beverage.abv}% ABV
+              </span>
+            )}
           </div>
           {beverage.description && (
-            <p className="text-sm text-foreground/80 mt-3 leading-relaxed">
+            <p 
+              className="text-sm text-foreground/80 mt-3 leading-relaxed" 
+              style={{ ...fontStyle, color: settings?.descriptionColor }}
+            >
               {beverage.description}
             </p>
           )}

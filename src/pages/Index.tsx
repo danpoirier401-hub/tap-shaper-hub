@@ -20,7 +20,15 @@ const Index = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12 py-4">
-            <h1 className="hero-title mb-4">{settings.title}</h1>
+            <h1 
+              className="hero-title mb-4" 
+              style={{ 
+                fontFamily: settings.fontFamily,
+                color: settings.titleColor 
+              }}
+            >
+              {settings.title}
+            </h1>
           </div>
           
           {/* Tap Grid */}
@@ -32,7 +40,7 @@ const Index = () => {
               'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
             }`}>
               {activeTaps.map((tap) => (
-                <TapCard key={tap.id} tap={tap} />
+                <TapCard key={tap.id} tap={tap} settings={settings} />
               ))}
             </div>
           ) : (

@@ -18,4 +18,11 @@ export interface Tap {
 export interface TaplistSettings {
   backgroundImage?: string; // base64 encoded image
   title: string;
+  fontFamily?: string;
+  titleColor?: string;
+  beverageNameColor?: string;
+  breweryColor?: string;
+  styleColor?: string;
+  abvColor?: string;
+  descriptionColor?: string;
 }

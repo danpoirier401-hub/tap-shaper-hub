@@ -4,14 +4,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Upload, Monitor } from 'lucide-react';
+import { ArrowLeft, Upload, Monitor, Type, Palette } from 'lucide-react';
 import { useTaplistData } from '@/hooks/useTaplistData';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const DisplaySettings = () => {
   const { settings, updateSettings } = useTaplistData();
   const { toast } = useToast();
   const [title, setTitle] = useState(settings.title);
+  const [fontFamily, setFontFamily] = useState(settings.fontFamily || 'Inter');
+  const [titleColor, setTitleColor] = useState(settings.titleColor || '#d4af37');
+  const [beverageNameColor, setBeverageNameColor] = useState(settings.beverageNameColor || '#d4af37');
+  const [breweryColor, setBreweryColor] = useState(settings.breweryColor || '#9ca3af');
+  const [styleColor, setStyleColor] = useState(settings.styleColor || '#9ca3af');
+  const [abvColor, setAbvColor] = useState(settings.abvColor || '#9ca3af');
+  const [descriptionColor, setDescriptionColor] = useState(settings.descriptionColor || '#e5e7eb');
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -42,6 +50,22 @@ const DisplaySettings = () => {
     toast({
       title: "Background removed",
       description: "The background image has been removed.",
+    });
+  };
+
+  const handleStyleUpdate = () => {
+    updateSettings({ 
+      fontFamily,
+      titleColor,
+      beverageNameColor,
+      breweryColor,
+      styleColor,
+      abvColor,
+      descriptionColor
+    });
+    toast({
+      title: "Styles updated",
+      description: "Your display styles have been changed successfully.",
     });
   };
 
@@ -116,7 +140,121 @@ const DisplaySettings = () => {
                       Remove Background
                     </Button>
                   </div>
-                )}
+                 )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Type className="h-5 w-5" />
+                  <span>Font Family</span>
+                </CardTitle>
+                <CardDescription>
+                  Choose the font for your display
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="font">Font Family</Label>
+                  <Select value={fontFamily} onValueChange={setFontFamily}>
+                    <SelectTrigger id="font">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Inter">Inter (Default)</SelectItem>
+                      <SelectItem value="Arial">Arial</SelectItem>
+                      <SelectItem value="Georgia">Georgia</SelectItem>
+                      <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+                      <SelectItem value="Courier New">Courier New</SelectItem>
+                      <SelectItem value="Verdana">Verdana</SelectItem>
+                      <SelectItem value="Trebuchet MS">Trebuchet MS</SelectItem>
+                      <SelectItem value="Comic Sans MS">Comic Sans MS</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleStyleUpdate} className="w-full">
+                  Apply Font
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Palette className="h-5 w-5" />
+                  <span>Colors</span>
+                </CardTitle>
+                <CardDescription>
+                  Customize colors for different elements
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="titleColor">Title</Label>
+                    <Input
+                      id="titleColor"
+                      type="color"
+                      value={titleColor}
+                      onChange={(e) => setTitleColor(e.target.value)}
+                      className="h-10 cursor-pointer"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="beverageNameColor">Beverage Name</Label>
+                    <Input
+                      id="beverageNameColor"
+                      type="color"
+                      value={beverageNameColor}
+                      onChange={(e) => setBeverageNameColor(e.target.value)}
+                      className="h-10 cursor-pointer"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="breweryColor">Brewery/Producer</Label>
+                    <Input
+                      id="breweryColor"
+                      type="color"
+                      value={breweryColor}
+                      onChange={(e) => setBreweryColor(e.target.value)}
+                      className="h-10 cursor-pointer"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="styleColor">Style</Label>
+                    <Input
+                      id="styleColor"
+                      type="color"
+                      value={styleColor}
+                      onChange={(e) => setStyleColor(e.target.value)}
+                      className="h-10 cursor-pointer"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="abvColor">ABV</Label>
+                    <Input
+                      id="abvColor"
+                      type="color"
+                      value={abvColor}
+                      onChange={(e) => setAbvColor(e.target.value)}
+                      className="h-10 cursor-pointer"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="descriptionColor">Description</Label>
+                    <Input
+                      id="descriptionColor"
+                      type="color"
+                      value={descriptionColor}
+                      onChange={(e) => setDescriptionColor(e.target.value)}
+                      className="h-10 cursor-pointer"
+                    />
+                  </div>
+                </div>
+                <Button onClick={handleStyleUpdate} className="w-full">
+                  Apply Colors
+                </Button>
               </CardContent>
             </Card>
           </div>
