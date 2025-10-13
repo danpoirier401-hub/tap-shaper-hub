@@ -77,7 +77,7 @@ const Index = () => {
         variant="ghost"
         size="icon"
         onClick={toggleFullscreen}
-        className="fixed bottom-4 right-4 z-50 bg-background/80 backdrop-blur-sm hover:bg-background"
+        className="fixed bottom-4 left-4 z-50 bg-background/80 backdrop-blur-sm hover:bg-background"
       >
         {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
       </Button>
