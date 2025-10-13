@@ -151,7 +151,7 @@ const DisplaySettings = () => {
                   <span>Font Family</span>
                 </CardTitle>
                 <CardDescription>
-                  Choose the font for your display
+                  Choose the font for your display (each shown in its own style)
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -161,17 +161,32 @@ const DisplaySettings = () => {
                     <SelectTrigger id="font">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Inter">Inter (Default)</SelectItem>
-                      <SelectItem value="Arial">Arial</SelectItem>
-                      <SelectItem value="Georgia">Georgia</SelectItem>
-                      <SelectItem value="Times New Roman">Times New Roman</SelectItem>
-                      <SelectItem value="Courier New">Courier New</SelectItem>
-                      <SelectItem value="Verdana">Verdana</SelectItem>
-                      <SelectItem value="Trebuchet MS">Trebuchet MS</SelectItem>
-                      <SelectItem value="Comic Sans MS">Comic Sans MS</SelectItem>
+                    <SelectContent className="max-h-[400px]">
+                      <SelectItem value="Inter" style={{ fontFamily: 'Inter' }}>Inter (Default)</SelectItem>
+                      <SelectItem value="Arial" style={{ fontFamily: 'Arial' }}>Arial</SelectItem>
+                      <SelectItem value="Georgia" style={{ fontFamily: 'Georgia' }}>Georgia</SelectItem>
+                      <SelectItem value="Times New Roman" style={{ fontFamily: 'Times New Roman' }}>Times New Roman</SelectItem>
+                      <SelectItem value="Courier New" style={{ fontFamily: 'Courier New' }}>Courier New</SelectItem>
+                      <SelectItem value="Verdana" style={{ fontFamily: 'Verdana' }}>Verdana</SelectItem>
+                      <SelectItem value="Trebuchet MS" style={{ fontFamily: 'Trebuchet MS' }}>Trebuchet MS</SelectItem>
+                      <SelectItem value="Comic Sans MS" style={{ fontFamily: 'Comic Sans MS' }}>Comic Sans MS</SelectItem>
+                      
+                      {/* Halloween/Spooky Fonts */}
+                      <SelectItem value="Creepster" style={{ fontFamily: 'Creepster' }} className="text-lg">🎃 Creepster</SelectItem>
+                      <SelectItem value="Nosifer" style={{ fontFamily: 'Nosifer' }} className="text-lg">🦇 Nosifer</SelectItem>
+                      <SelectItem value="Eater" style={{ fontFamily: 'Eater' }} className="text-lg">🧟 Eater</SelectItem>
+                      <SelectItem value="Butcherman" style={{ fontFamily: 'Butcherman' }} className="text-lg">🔪 Butcherman</SelectItem>
+                      <SelectItem value="Special Elite" style={{ fontFamily: 'Special Elite' }}>👻 Special Elite</SelectItem>
+                      <SelectItem value="Cabin Sketch" style={{ fontFamily: 'Cabin Sketch' }}>🕷️ Cabin Sketch</SelectItem>
+                      <SelectItem value="Metal Mania" style={{ fontFamily: 'Metal Mania' }}>⚡ Metal Mania</SelectItem>
+                      <SelectItem value="Lacquer" style={{ fontFamily: 'Lacquer' }}>💀 Lacquer</SelectItem>
+                      <SelectItem value="Rubik Wet Paint" style={{ fontFamily: 'Rubik Wet Paint' }}>🩸 Rubik Wet Paint</SelectItem>
+                      <SelectItem value="Finger Paint" style={{ fontFamily: 'Finger Paint' }}>🖐️ Finger Paint</SelectItem>
                     </SelectContent>
                   </Select>
+                  <div className="mt-2 p-3 bg-muted rounded-md text-center" style={{ fontFamily: fontFamily }}>
+                    <p className="text-lg">Preview: The Quick Brown Fox</p>
+                  </div>
                 </div>
                 <Button onClick={handleStyleUpdate} className="w-full">
                   Apply Font
