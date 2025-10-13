@@ -8,6 +8,8 @@ import Management from "./pages/Management";
 import DisplaySettings from "./pages/DisplaySettings";
 import BeverageManagement from "./pages/BeverageManagement";
 import TapAssignment from "./pages/TapAssignment";
+import Auth from "./pages/Auth";
+import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,10 +22,11 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/management" element={<Management />} />
-          <Route path="/management/display" element={<DisplaySettings />} />
-          <Route path="/management/beverages" element={<BeverageManagement />} />
-          <Route path="/management/taps" element={<TapAssignment />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/management" element={<ProtectedRoute><Management /></ProtectedRoute>} />
+          <Route path="/management/display" element={<ProtectedRoute><DisplaySettings /></ProtectedRoute>} />
+          <Route path="/management/beverages" element={<ProtectedRoute><BeverageManagement /></ProtectedRoute>} />
+          <Route path="/management/taps" element={<ProtectedRoute><TapAssignment /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
