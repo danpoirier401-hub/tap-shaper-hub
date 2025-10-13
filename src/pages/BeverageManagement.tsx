@@ -129,47 +129,70 @@ const BeverageManagement = () => {
     });
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // Validate file size (5MB limit)
-      if (file.size > 5 * 1024 * 1024) {
-        toast({ 
-          title: 'Error', 
-          description: 'Image must be less than 5MB',
-          variant: 'destructive'
+    if (!file) return;
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ 
+        title: 'Error', 
+        description: 'Image must be less than 5MB',
+        variant: 'destructive'
+      });
+      event.target.value = '';
+      return;
+    }
+    
+    // Validate file type (enforced by storage bucket as well)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: 'Error',
+        description: 'Please upload a JPG, PNG, WebP, or GIF image',
+        variant: 'destructive'
+      });
+      event.target.value = '';
+      return;
+    }
+
+    try {
+      // Upload to Supabase Storage
+      const { supabase } = await import('@/integrations/supabase/client');
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('beverage-labels')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
         });
-        event.target.value = ''; // Clear the input
-        return;
+
+      if (uploadError) {
+        throw uploadError;
       }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('beverage-labels')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({ ...prev, label: publicUrl }));
       
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: 'Error',
-          description: 'Please upload an image file',
-          variant: 'destructive'
-        });
-        event.target.value = '';
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        // Validate base64 size after encoding
-        if (result.length > 7 * 1024 * 1024) { // ~5MB base64 is ~7MB in size
-          toast({
-            title: 'Error',
-            description: 'Encoded image is too large',
-            variant: 'destructive'
-          });
-          event.target.value = '';
-          return;
-        }
-        setFormData(prev => ({ ...prev, label: result }));
-      };
-      reader.readAsDataURL(file);
+      toast({
+        title: 'Success',
+        description: 'Image uploaded successfully',
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to upload image. Please try again.',
+        variant: 'destructive'
+      });
+      event.target.value = '';
     }
   };
 
