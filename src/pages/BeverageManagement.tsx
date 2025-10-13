@@ -11,6 +11,17 @@ import { ArrowLeft, Plus, Pencil, Trash2, Upload } from 'lucide-react';
 import { useTaplistData } from '@/hooks/useTaplistData';
 import { useToast } from '@/hooks/use-toast';
 import { Beverage } from '@/types/taplist';
+import { z } from 'zod';
+
+const beverageSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
+  type: z.enum(['beer', 'wine', 'coffee', 'other']),
+  brewery: z.string().max(100, 'Brewery name must be less than 100 characters').optional().or(z.literal('')),
+  abv: z.number().min(0, 'ABV cannot be negative').max(100, 'ABV cannot exceed 100%').optional(),
+  style: z.string().max(50, 'Style must be less than 50 characters').optional().or(z.literal('')),
+  description: z.string().max(500, 'Description must be less than 500 characters').optional().or(z.literal('')),
+  label: z.string().optional()
+});
 
 const BeverageManagement = () => {
   const { beverages, addBeverage, updateBeverage, deleteBeverage } = useTaplistData();
@@ -43,32 +54,57 @@ const BeverageManagement = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) return;
 
-    const beverageData = {
-      name: formData.name,
-      type: formData.type,
-      brewery: formData.brewery || undefined,
-      abv: formData.abv ? parseFloat(formData.abv) : undefined,
-      style: formData.style || undefined,
-      description: formData.description || undefined,
-      label: formData.label || undefined,
-    };
-
-    if (editingId) {
-      updateBeverage(editingId, beverageData);
-      toast({
-        title: "Beverage updated",
-        description: `${formData.name} has been updated successfully.`,
+    try {
+      const beverageData = beverageSchema.parse({
+        name: formData.name,
+        type: formData.type,
+        brewery: formData.brewery,
+        abv: formData.abv ? parseFloat(formData.abv) : undefined,
+        style: formData.style,
+        description: formData.description,
+        label: formData.label
       });
-    } else {
-      addBeverage(beverageData);
+
+      const dataToSubmit = {
+        name: beverageData.name,
+        type: beverageData.type,
+        brewery: beverageData.brewery || undefined,
+        abv: beverageData.abv,
+        style: beverageData.style || undefined,
+        description: beverageData.description || undefined,
+        label: beverageData.label || undefined,
+      };
+
+      if (editingId) {
+        updateBeverage(editingId, dataToSubmit);
+        toast({
+          title: "Beverage updated",
+          description: `${formData.name} has been updated successfully.`,
+        });
+      } else {
+        addBeverage(dataToSubmit);
+        toast({
+          title: "Beverage added",
+          description: `${formData.name} has been added to your library.`,
+        });
+      }
+      resetForm();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: 'Validation Error',
+          description: error.errors[0].message,
+          variant: 'destructive'
+        });
+        return;
+      }
       toast({
-        title: "Beverage added",
-        description: `${formData.name} has been added to your library.`,
+        title: 'Error',
+        description: 'An unexpected error occurred',
+        variant: 'destructive'
       });
     }
-    resetForm();
   };
 
   const handleEdit = (beverage: Beverage) => {
@@ -96,9 +132,41 @@ const BeverageManagement = () => {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ 
+          title: 'Error', 
+          description: 'Image must be less than 5MB',
+          variant: 'destructive'
+        });
+        event.target.value = ''; // Clear the input
+        return;
+      }
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: 'Error',
+          description: 'Please upload an image file',
+          variant: 'destructive'
+        });
+        event.target.value = '';
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
+        // Validate base64 size after encoding
+        if (result.length > 7 * 1024 * 1024) { // ~5MB base64 is ~7MB in size
+          toast({
+            title: 'Error',
+            description: 'Encoded image is too large',
+            variant: 'destructive'
+          });
+          event.target.value = '';
+          return;
+        }
         setFormData(prev => ({ ...prev, label: result }));
       };
       reader.readAsDataURL(file);
@@ -213,7 +281,11 @@ const BeverageManagement = () => {
                       onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                       placeholder="Tasting notes, description..."
                       rows={3}
+                      maxLength={500}
                     />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {formData.description.length}/500 characters
+                    </p>
                   </div>
 
                   <div>
