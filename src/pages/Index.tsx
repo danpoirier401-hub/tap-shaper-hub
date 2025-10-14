@@ -37,7 +37,7 @@ const Index = () => {
             <h1 
               className="hero-title mb-4" 
               style={{ 
-                fontFamily: settings.fontFamily,
+                fontFamily: settings.titleFont || settings.fontFamily,
                 color: settings.titleColor 
               }}
             >

@@ -20,6 +20,14 @@ const DisplaySettings = () => {
   const [styleColor, setStyleColor] = useState(settings.styleColor || '#9ca3af');
   const [abvColor, setAbvColor] = useState(settings.abvColor || '#9ca3af');
   const [descriptionColor, setDescriptionColor] = useState(settings.descriptionColor || '#e5e7eb');
+  
+  // Individual font selections
+  const [titleFont, setTitleFont] = useState(settings.titleFont || settings.fontFamily || 'Inter');
+  const [beverageNameFont, setBeverageNameFont] = useState(settings.beverageNameFont || settings.fontFamily || 'Inter');
+  const [breweryFont, setBreweryFont] = useState(settings.breweryFont || settings.fontFamily || 'Inter');
+  const [styleFont, setStyleFont] = useState(settings.styleFont || settings.fontFamily || 'Inter');
+  const [abvFont, setAbvFont] = useState(settings.abvFont || settings.fontFamily || 'Inter');
+  const [descriptionFont, setDescriptionFont] = useState(settings.descriptionFont || settings.fontFamily || 'Inter');
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -61,13 +69,63 @@ const DisplaySettings = () => {
       breweryColor,
       styleColor,
       abvColor,
-      descriptionColor
+      descriptionColor,
+      titleFont,
+      beverageNameFont,
+      breweryFont,
+      styleFont,
+      abvFont,
+      descriptionFont
     });
     toast({
       title: "Styles updated",
       description: "Your display styles have been changed successfully.",
     });
   };
+
+  const fontOptions = [
+    { value: 'Inter', label: 'Inter (Default)', emoji: '' },
+    { value: 'Arial', label: 'Arial', emoji: '' },
+    { value: 'Georgia', label: 'Georgia', emoji: '' },
+    { value: 'Times New Roman', label: 'Times New Roman', emoji: '' },
+    { value: 'Courier New', label: 'Courier New', emoji: '' },
+    { value: 'Verdana', label: 'Verdana', emoji: '' },
+    { value: 'Trebuchet MS', label: 'Trebuchet MS', emoji: '' },
+    { value: 'Comic Sans MS', label: 'Comic Sans MS', emoji: '' },
+    { value: 'Creepster', label: 'Creepster', emoji: '🎃' },
+    { value: 'Nosifer', label: 'Nosifer', emoji: '🦇' },
+    { value: 'Eater', label: 'Eater', emoji: '🧟' },
+    { value: 'Butcherman', label: 'Butcherman', emoji: '🔪' },
+    { value: 'Special Elite', label: 'Special Elite', emoji: '👻' },
+    { value: 'Cabin Sketch', label: 'Cabin Sketch', emoji: '🕷️' },
+    { value: 'Metal Mania', label: 'Metal Mania', emoji: '⚡' },
+    { value: 'Lacquer', label: 'Lacquer', emoji: '💀' },
+    { value: 'Rubik Wet Paint', label: 'Rubik Wet Paint', emoji: '🩸' },
+    { value: 'Finger Paint', label: 'Finger Paint', emoji: '🖐️' },
+    { value: 'Rubik Moonrocks', label: 'Rubik Moonrocks', emoji: '🌙' },
+    { value: 'Rubik Puddles', label: 'Rubik Puddles', emoji: '💧' },
+    { value: 'Henny Penny', label: 'Henny Penny', emoji: '🐔' },
+    { value: 'Freckle Face', label: 'Freckle Face', emoji: '👧' },
+    { value: 'Jolly Lodger', label: 'Jolly Lodger', emoji: '🏴‍☠️' },
+  ];
+
+  const FontSelector = ({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) => (
+    <div>
+      <Label>{label}</Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="max-h-[300px]">
+          {fontOptions.map(font => (
+            <SelectItem key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+              {font.emoji && `${font.emoji} `}{font.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
 
   return (
     <div className="min-h-screen p-8">
@@ -148,48 +206,21 @@ const DisplaySettings = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Type className="h-5 w-5" />
-                  <span>Font Family</span>
+                  <span>Typography</span>
                 </CardTitle>
                 <CardDescription>
-                  Choose the font for your display (each shown in its own style)
+                  Choose fonts for each element individually
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="font">Font Family</Label>
-                  <Select value={fontFamily} onValueChange={setFontFamily}>
-                    <SelectTrigger id="font">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[400px]">
-                      <SelectItem value="Inter" style={{ fontFamily: 'Inter' }}>Inter (Default)</SelectItem>
-                      <SelectItem value="Arial" style={{ fontFamily: 'Arial' }}>Arial</SelectItem>
-                      <SelectItem value="Georgia" style={{ fontFamily: 'Georgia' }}>Georgia</SelectItem>
-                      <SelectItem value="Times New Roman" style={{ fontFamily: 'Times New Roman' }}>Times New Roman</SelectItem>
-                      <SelectItem value="Courier New" style={{ fontFamily: 'Courier New' }}>Courier New</SelectItem>
-                      <SelectItem value="Verdana" style={{ fontFamily: 'Verdana' }}>Verdana</SelectItem>
-                      <SelectItem value="Trebuchet MS" style={{ fontFamily: 'Trebuchet MS' }}>Trebuchet MS</SelectItem>
-                      <SelectItem value="Comic Sans MS" style={{ fontFamily: 'Comic Sans MS' }}>Comic Sans MS</SelectItem>
-                      
-                      {/* Halloween/Spooky Fonts */}
-                      <SelectItem value="Creepster" style={{ fontFamily: 'Creepster' }} className="text-lg">🎃 Creepster</SelectItem>
-                      <SelectItem value="Nosifer" style={{ fontFamily: 'Nosifer' }} className="text-lg">🦇 Nosifer</SelectItem>
-                      <SelectItem value="Eater" style={{ fontFamily: 'Eater' }} className="text-lg">🧟 Eater</SelectItem>
-                      <SelectItem value="Butcherman" style={{ fontFamily: 'Butcherman' }} className="text-lg">🔪 Butcherman</SelectItem>
-                      <SelectItem value="Special Elite" style={{ fontFamily: 'Special Elite' }}>👻 Special Elite</SelectItem>
-                      <SelectItem value="Cabin Sketch" style={{ fontFamily: 'Cabin Sketch' }}>🕷️ Cabin Sketch</SelectItem>
-                      <SelectItem value="Metal Mania" style={{ fontFamily: 'Metal Mania' }}>⚡ Metal Mania</SelectItem>
-                      <SelectItem value="Lacquer" style={{ fontFamily: 'Lacquer' }}>💀 Lacquer</SelectItem>
-                      <SelectItem value="Rubik Wet Paint" style={{ fontFamily: 'Rubik Wet Paint' }}>🩸 Rubik Wet Paint</SelectItem>
-                      <SelectItem value="Finger Paint" style={{ fontFamily: 'Finger Paint' }}>🖐️ Finger Paint</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <div className="mt-2 p-3 bg-muted rounded-md text-center" style={{ fontFamily: fontFamily }}>
-                    <p className="text-lg">Preview: The Quick Brown Fox</p>
-                  </div>
-                </div>
+                <FontSelector value={titleFont} onChange={setTitleFont} label="Title Font" />
+                <FontSelector value={beverageNameFont} onChange={setBeverageNameFont} label="Beverage Name Font" />
+                <FontSelector value={breweryFont} onChange={setBreweryFont} label="Brewery Font" />
+                <FontSelector value={styleFont} onChange={setStyleFont} label="Style Font" />
+                <FontSelector value={abvFont} onChange={setAbvFont} label="ABV Font" />
+                <FontSelector value={descriptionFont} onChange={setDescriptionFont} label="Description Font" />
                 <Button onClick={handleStyleUpdate} className="w-full">
-                  Apply Font
+                  Apply Fonts
                 </Button>
               </CardContent>
             </Card>
@@ -294,17 +325,33 @@ const DisplaySettings = () => {
                   />
                 )}
                 <div className="relative z-10 p-6 text-center">
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-gold to-copper bg-clip-text text-transparent mb-4">
+                  <h2 
+                    className="text-2xl font-bold mb-4"
+                    style={{ fontFamily: titleFont, color: titleColor }}
+                  >
                     {title || settings.title}
                   </h2>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[1, 2, 3, 4].map((tap) => (
-                      <div key={tap} className="bg-card/50 rounded p-2">
-                        <div className="text-xs text-center text-muted-foreground">
-                          Tap {tap}
-                        </div>
-                      </div>
-                    ))}
+                  <div className="space-y-3 text-left bg-card/50 rounded p-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Beverage Name:</p>
+                      <p style={{ fontFamily: beverageNameFont, color: beverageNameColor }} className="font-bold">Sample IPA</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Brewery:</p>
+                      <p style={{ fontFamily: breweryFont, color: breweryColor }}>Sample Brewery</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Style:</p>
+                      <p style={{ fontFamily: styleFont, color: styleColor }}>American IPA</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">ABV:</p>
+                      <p style={{ fontFamily: abvFont, color: abvColor }}>6.5%</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Description:</p>
+                      <p style={{ fontFamily: descriptionFont, color: descriptionColor }} className="text-sm">A hoppy, citrus-forward IPA with notes of grapefruit.</p>
+                    </div>
                   </div>
                 </div>
               </div>

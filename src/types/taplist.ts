@@ -25,4 +25,10 @@ export interface TaplistSettings {
   styleColor?: string;
   abvColor?: string;
   descriptionColor?: string;
+  titleFont?: string;
+  beverageNameFont?: string;
+  breweryFont?: string;
+  styleFont?: string;
+  abvFont?: string;
+  descriptionFont?: string;
 }

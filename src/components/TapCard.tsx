@@ -43,26 +43,38 @@ export function TapCard({ tap, settings }: TapCardProps) {
         <div className="flex-1 space-y-1" style={fontStyle}>
           <h3 
             className="text-xl font-bold text-gold" 
-            style={{ ...fontStyle, color: settings?.beverageNameColor }}
+            style={{ 
+              fontFamily: settings?.beverageNameFont || settings?.fontFamily,
+              color: settings?.beverageNameColor 
+            }}
           >
             {beverage.name}
           </h3>
           {beverage.brewery && (
             <p 
               className="text-sm text-muted-foreground" 
-              style={{ ...fontStyle, color: settings?.breweryColor }}
+              style={{ 
+                fontFamily: settings?.breweryFont || settings?.fontFamily,
+                color: settings?.breweryColor 
+              }}
             >
               {beverage.brewery}
             </p>
           )}
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             {beverage.style && (
-              <span style={{ ...fontStyle, color: settings?.styleColor }}>
+              <span style={{ 
+                fontFamily: settings?.styleFont || settings?.fontFamily,
+                color: settings?.styleColor 
+              }}>
                 {beverage.style}
               </span>
             )}
             {beverage.abv && (
-              <span style={{ ...fontStyle, color: settings?.abvColor }}>
+              <span style={{ 
+                fontFamily: settings?.abvFont || settings?.fontFamily,
+                color: settings?.abvColor 
+              }}>
                 {beverage.abv}% ABV
               </span>
             )}
@@ -70,7 +82,10 @@ export function TapCard({ tap, settings }: TapCardProps) {
           {beverage.description && (
             <p 
               className="text-sm text-foreground/80 mt-3 leading-relaxed" 
-              style={{ ...fontStyle, color: settings?.descriptionColor }}
+              style={{ 
+                fontFamily: settings?.descriptionFont || settings?.fontFamily,
+                color: settings?.descriptionColor 
+              }}
             >
               {beverage.description}
             </p>
