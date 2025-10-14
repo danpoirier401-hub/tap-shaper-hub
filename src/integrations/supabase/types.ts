@@ -53,41 +53,59 @@ export type Database = {
       taplist_settings: {
         Row: {
           abv_color: string | null
+          abv_font: string | null
           background_image: string | null
           beverage_name_color: string | null
+          beverage_name_font: string | null
           brewery_color: string | null
+          brewery_font: string | null
           description_color: string | null
+          description_font: string | null
           font_family: string | null
           id: string
           style_color: string | null
+          style_font: string | null
           title: string | null
           title_color: string | null
+          title_font: string | null
           updated_at: string | null
         }
         Insert: {
           abv_color?: string | null
+          abv_font?: string | null
           background_image?: string | null
           beverage_name_color?: string | null
+          beverage_name_font?: string | null
           brewery_color?: string | null
+          brewery_font?: string | null
           description_color?: string | null
+          description_font?: string | null
           font_family?: string | null
           id?: string
           style_color?: string | null
+          style_font?: string | null
           title?: string | null
           title_color?: string | null
+          title_font?: string | null
           updated_at?: string | null
         }
         Update: {
           abv_color?: string | null
+          abv_font?: string | null
           background_image?: string | null
           beverage_name_color?: string | null
+          beverage_name_font?: string | null
           brewery_color?: string | null
+          brewery_font?: string | null
           description_color?: string | null
+          description_font?: string | null
           font_family?: string | null
           id?: string
           style_color?: string | null
+          style_font?: string | null
           title?: string | null
           title_color?: string | null
+          title_font?: string | null
           updated_at?: string | null
         }
         Relationships: []

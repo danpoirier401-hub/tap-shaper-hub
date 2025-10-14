@@ -136,6 +136,12 @@ export function useTaplistData() {
         styleColor: data.style_color || undefined,
         abvColor: data.abv_color || undefined,
         descriptionColor: data.description_color || undefined,
+        titleFont: data.title_font || undefined,
+        beverageNameFont: data.beverage_name_font || undefined,
+        breweryFont: data.brewery_font || undefined,
+        styleFont: data.style_font || undefined,
+        abvFont: data.abv_font || undefined,
+        descriptionFont: data.description_font || undefined,
       });
     }
   };
@@ -235,6 +241,12 @@ export function useTaplistData() {
           style_color: newSettings.styleColor,
           abv_color: newSettings.abvColor,
           description_color: newSettings.descriptionColor,
+          title_font: newSettings.titleFont,
+          beverage_name_font: newSettings.beverageNameFont,
+          brewery_font: newSettings.breweryFont,
+          style_font: newSettings.styleFont,
+          abv_font: newSettings.abvFont,
+          description_font: newSettings.descriptionFont,
         })
         .eq('id', existingSettings.id);
 
