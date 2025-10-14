@@ -29,20 +29,20 @@ export function TapCard({ tap, settings }: TapCardProps) {
 
   return (
     <Card className="bg-transparent border-transparent shadow-none">
-      <div className="flex items-start gap-6 p-4">
+      <div className="flex items-start gap-8 p-6">
         {beverage.label && (
           <div className="flex-shrink-0">
             <img
               src={beverage.label}
               alt={`${beverage.name} label`}
-              className="w-16 h-16 object-contain rounded"
+              className="w-32 h-32 object-contain rounded"
             />
           </div>
         )}
         
-        <div className="flex-1 space-y-1" style={fontStyle}>
+        <div className="flex-1 space-y-2" style={fontStyle}>
           <h3 
-            className="text-xl font-bold text-gold" 
+            className="text-3xl font-bold text-gold" 
             style={{ 
               fontFamily: settings?.beverageNameFont || settings?.fontFamily,
               color: settings?.beverageNameColor 
@@ -52,7 +52,7 @@ export function TapCard({ tap, settings }: TapCardProps) {
           </h3>
           {beverage.brewery && (
             <p 
-              className="text-sm text-muted-foreground" 
+              className="text-lg text-muted-foreground" 
               style={{ 
                 fontFamily: settings?.breweryFont || settings?.fontFamily,
                 color: settings?.breweryColor 
@@ -61,7 +61,7 @@ export function TapCard({ tap, settings }: TapCardProps) {
               {beverage.brewery}
             </p>
           )}
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <div className="flex items-center gap-4 text-base text-muted-foreground">
             {beverage.style && (
               <span style={{ 
                 fontFamily: settings?.styleFont || settings?.fontFamily,
@@ -81,7 +81,7 @@ export function TapCard({ tap, settings }: TapCardProps) {
           </div>
           {beverage.description && (
             <p 
-              className="text-sm text-foreground/80 mt-3 leading-relaxed" 
+              className="text-base text-foreground/80 mt-4 leading-relaxed" 
               style={{ 
                 fontFamily: settings?.descriptionFont || settings?.fontFamily,
                 color: settings?.descriptionColor 
