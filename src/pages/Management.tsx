@@ -24,7 +24,7 @@ const Management = () => {
               <div className="flex items-center space-x-2">
                 <Monitor className="h-8 w-8 text-primary" />
                 <div>
-                  <p className="text-2xl font-bold">{activeTaps}/4</p>
+                  <p className="text-2xl font-bold">{activeTaps}/{taps.length}</p>
                   <p className="text-sm text-muted-foreground">Active Taps</p>
                 </div>
               </div>
@@ -99,7 +99,7 @@ const Management = () => {
                 <span>Tap Assignment</span>
               </CardTitle>
               <CardDescription>
-                Assign beverages to your 4 taps and control what's currently flowing
+                Assign beverages to your {taps.length} taps and control what's currently flowing
               </CardDescription>
             </CardHeader>
             <CardContent>

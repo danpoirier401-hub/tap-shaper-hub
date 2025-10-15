@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,22 +12,42 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const DisplaySettings = () => {
   const { settings, updateSettings } = useTaplistData();
   const { toast } = useToast();
-  const [title, setTitle] = useState(settings.title);
-  const [fontFamily, setFontFamily] = useState(settings.fontFamily || 'Inter');
-  const [titleColor, setTitleColor] = useState(settings.titleColor || '#d4af37');
-  const [beverageNameColor, setBeverageNameColor] = useState(settings.beverageNameColor || '#d4af37');
-  const [breweryColor, setBreweryColor] = useState(settings.breweryColor || '#9ca3af');
-  const [styleColor, setStyleColor] = useState(settings.styleColor || '#9ca3af');
-  const [abvColor, setAbvColor] = useState(settings.abvColor || '#9ca3af');
-  const [descriptionColor, setDescriptionColor] = useState(settings.descriptionColor || '#e5e7eb');
+  const [title, setTitle] = useState('');
+  const [fontFamily, setFontFamily] = useState('Inter');
+  const [titleColor, setTitleColor] = useState('#d4af37');
+  const [beverageNameColor, setBeverageNameColor] = useState('#d4af37');
+  const [breweryColor, setBreweryColor] = useState('#9ca3af');
+  const [styleColor, setStyleColor] = useState('#9ca3af');
+  const [abvColor, setAbvColor] = useState('#9ca3af');
+  const [descriptionColor, setDescriptionColor] = useState('#e5e7eb');
   
   // Individual font selections
-  const [titleFont, setTitleFont] = useState(settings.titleFont || settings.fontFamily || 'Inter');
-  const [beverageNameFont, setBeverageNameFont] = useState(settings.beverageNameFont || settings.fontFamily || 'Inter');
-  const [breweryFont, setBreweryFont] = useState(settings.breweryFont || settings.fontFamily || 'Inter');
-  const [styleFont, setStyleFont] = useState(settings.styleFont || settings.fontFamily || 'Inter');
-  const [abvFont, setAbvFont] = useState(settings.abvFont || settings.fontFamily || 'Inter');
-  const [descriptionFont, setDescriptionFont] = useState(settings.descriptionFont || settings.fontFamily || 'Inter');
+  const [titleFont, setTitleFont] = useState('Inter');
+  const [beverageNameFont, setBeverageNameFont] = useState('Inter');
+  const [breweryFont, setBreweryFont] = useState('Inter');
+  const [styleFont, setStyleFont] = useState('Inter');
+  const [abvFont, setAbvFont] = useState('Inter');
+  const [descriptionFont, setDescriptionFont] = useState('Inter');
+
+  // Update local state when settings load from database
+  useEffect(() => {
+    if (settings) {
+      setTitle(settings.title || 'On Tap');
+      setFontFamily(settings.fontFamily || 'Inter');
+      setTitleColor(settings.titleColor || '#d4af37');
+      setBeverageNameColor(settings.beverageNameColor || '#d4af37');
+      setBreweryColor(settings.breweryColor || '#9ca3af');
+      setStyleColor(settings.styleColor || '#9ca3af');
+      setAbvColor(settings.abvColor || '#9ca3af');
+      setDescriptionColor(settings.descriptionColor || '#e5e7eb');
+      setTitleFont(settings.titleFont || settings.fontFamily || 'Inter');
+      setBeverageNameFont(settings.beverageNameFont || settings.fontFamily || 'Inter');
+      setBreweryFont(settings.breweryFont || settings.fontFamily || 'Inter');
+      setStyleFont(settings.styleFont || settings.fontFamily || 'Inter');
+      setAbvFont(settings.abvFont || settings.fontFamily || 'Inter');
+      setDescriptionFont(settings.descriptionFont || settings.fontFamily || 'Inter');
+    }
+  }, [settings]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
