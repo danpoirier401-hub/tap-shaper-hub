@@ -3,9 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Mail, ShieldCheck, ShieldX } from 'lucide-react';
+import { ArrowLeft, Mail, ShieldCheck, ShieldX, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   AlertDialog,
@@ -17,11 +20,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface UserWithRole {
   id: string;
   email: string;
-  role: string;
+  roles: string[];
+  isAdmin: boolean;
   created_at: string;
 }
 
@@ -30,19 +42,15 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [actionType, setActionType] = useState<'reset' | 'toggle-role' | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [makeAdmin, setMakeAdmin] = useState(false);
+  const [creating, setCreating] = useState(false);
   const { toast } = useToast();
 
   const fetchUsers = async () => {
     try {
-      // Get all user roles with user emails
-      const { data: userRoles, error } = await supabase
-        .from('user_roles')
-        .select('user_id, role, created_at')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Get user details from auth.users metadata
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -54,21 +62,14 @@ const UserManagement = () => {
         return;
       }
 
-      // For each user role, we need to get their email
-      // Since we can't directly query auth.users from client, we'll use the user_id
-      const usersWithRoles: UserWithRole[] = [];
-      
-      for (const userRole of userRoles || []) {
-        // Try to get user metadata if available
-        usersWithRoles.push({
-          id: userRole.user_id,
-          email: userRole.user_id, // Will display user ID for now
-          role: userRole.role,
-          created_at: userRole.created_at
-        });
-      }
+      // Call edge function to get all users
+      const { data, error } = await supabase.functions.invoke('manage-users', {
+        body: { action: 'list' }
+      });
 
-      setUsers(usersWithRoles);
+      if (error) throw error;
+
+      setUsers(data.users || []);
     } catch (error: any) {
       toast({
         title: 'Error loading users',
@@ -88,12 +89,12 @@ const UserManagement = () => {
     if (!selectedUser) return;
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(
-        selectedUser.email,
-        {
-          redirectTo: `${window.location.origin}/auth`
+      const { error } = await supabase.functions.invoke('manage-users', {
+        body: {
+          action: 'reset-password',
+          email: selectedUser.email
         }
-      );
+      });
 
       if (error) throw error;
 
@@ -117,7 +118,7 @@ const UserManagement = () => {
     if (!selectedUser) return;
 
     try {
-      const isCurrentlyAdmin = selectedUser.role === 'admin';
+      const isCurrentlyAdmin = selectedUser.isAdmin;
       
       if (isCurrentlyAdmin) {
         // Remove admin role
@@ -163,6 +164,60 @@ const UserManagement = () => {
     }
   };
 
+  const handleCreateUser = async () => {
+    if (!newUserEmail || !newUserPassword) {
+      toast({
+        title: 'Validation error',
+        description: 'Email and password are required',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (newUserPassword.length < 6) {
+      toast({
+        title: 'Validation error',
+        description: 'Password must be at least 6 characters',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setCreating(true);
+
+    try {
+      const { error } = await supabase.functions.invoke('manage-users', {
+        body: {
+          action: 'create',
+          email: newUserEmail,
+          password: newUserPassword,
+          makeAdmin: makeAdmin
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'User created',
+        description: `Successfully created account for ${newUserEmail}`,
+      });
+
+      setShowCreateDialog(false);
+      setNewUserEmail('');
+      setNewUserPassword('');
+      setMakeAdmin(false);
+      await fetchUsers();
+    } catch (error: any) {
+      toast({
+        title: 'Error creating user',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const openDialog = (user: UserWithRole, action: 'reset' | 'toggle-role') => {
     setSelectedUser(user);
     setActionType(action);
@@ -192,10 +247,18 @@ const UserManagement = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>System Users</CardTitle>
-            <CardDescription>
-              View and manage user accounts with administrative access
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>System Users</CardTitle>
+                <CardDescription>
+                  View and manage all user accounts and permissions
+                </CardDescription>
+              </div>
+              <Button onClick={() => setShowCreateDialog(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add User
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {users.length === 0 ? (
@@ -206,7 +269,7 @@ const UserManagement = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>User ID</TableHead>
+                    <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -215,11 +278,13 @@ const UserManagement = () => {
                 <TableBody>
                   {users.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-mono text-sm">{user.id.slice(0, 8)}...</TableCell>
+                      <TableCell className="font-medium">{user.email}</TableCell>
                       <TableCell>
-                        <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                          {user.role}
-                        </Badge>
+                        {user.isAdmin ? (
+                          <Badge variant="default">Admin</Badge>
+                        ) : (
+                          <Badge variant="secondary">User</Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         {new Date(user.created_at).toLocaleDateString()}
@@ -234,11 +299,11 @@ const UserManagement = () => {
                           Reset Password
                         </Button>
                         <Button
-                          variant={user.role === 'admin' ? 'destructive' : 'default'}
+                          variant={user.isAdmin ? 'destructive' : 'default'}
                           size="sm"
                           onClick={() => openDialog(user, 'toggle-role')}
                         >
-                          {user.role === 'admin' ? (
+                          {user.isAdmin ? (
                             <>
                               <ShieldX className="mr-2 h-4 w-4" />
                               Remove Admin
@@ -278,10 +343,10 @@ const UserManagement = () => {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                {selectedUser?.role === 'admin' ? 'Remove Admin Role' : 'Grant Admin Role'}
+                {selectedUser?.isAdmin ? 'Remove Admin Role' : 'Grant Admin Role'}
               </AlertDialogTitle>
               <AlertDialogDescription>
-                {selectedUser?.role === 'admin' 
+                {selectedUser?.isAdmin 
                   ? 'This user will lose administrative privileges and will no longer be able to manage beverages, taps, or settings.'
                   : 'This user will gain administrative privileges and will be able to manage beverages, taps, and settings.'}
               </AlertDialogDescription>
@@ -289,11 +354,60 @@ const UserManagement = () => {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={handleToggleAdminRole}>
-                {selectedUser?.role === 'admin' ? 'Remove Role' : 'Grant Role'}
+                {selectedUser?.isAdmin ? 'Remove Role' : 'Grant Role'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New User</DialogTitle>
+              <DialogDescription>
+                Manually add a new user account to the system
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="user@example.com"
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Minimum 6 characters"
+                  value={newUserPassword}
+                  onChange={(e) => setNewUserPassword(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="admin"
+                  checked={makeAdmin}
+                  onCheckedChange={setMakeAdmin}
+                />
+                <Label htmlFor="admin">Grant admin privileges</Label>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreateUser} disabled={creating}>
+                {creating ? 'Creating...' : 'Create User'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
