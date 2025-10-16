@@ -7,7 +7,7 @@ import { Settings, Beer, Monitor } from 'lucide-react';
 const Management = () => {
   const { beverages, taps } = useTaplistData();
   
-  const activeTaps = taps.filter(tap => tap.isActive).length;
+  const activeTaps = taps.filter(tap => tap.beverage).length;
   
   return (
     <div className="min-h-screen p-8">
