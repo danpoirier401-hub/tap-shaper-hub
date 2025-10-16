@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { useTaplistData } from '@/hooks/useTaplistData';
-import { Settings, Beer, Monitor } from 'lucide-react';
+import { Settings, Beer, Monitor, Users } from 'lucide-react';
 
 const Management = () => {
   const { beverages, taps } = useTaplistData();
@@ -105,6 +105,23 @@ const Management = () => {
             <CardContent>
               <Link to="/management/taps">
                 <Button className="w-full">Assign Taps</Button>
+              </Link>
+            </CardContent>
+          </Card>
+          
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Users className="h-5 w-5" />
+                <span>User Management</span>
+              </CardTitle>
+              <CardDescription>
+                Manage user accounts, roles, and permissions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link to="/management/users">
+                <Button className="w-full">Manage Users</Button>
               </Link>
             </CardContent>
           </Card>

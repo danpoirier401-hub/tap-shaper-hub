@@ -8,6 +8,7 @@ import Management from "./pages/Management";
 import DisplaySettings from "./pages/DisplaySettings";
 import BeverageManagement from "./pages/BeverageManagement";
 import TapAssignment from "./pages/TapAssignment";
+import UserManagement from "./pages/UserManagement";
 import Auth from "./pages/Auth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/management/display" element={<ProtectedRoute><DisplaySettings /></ProtectedRoute>} />
           <Route path="/management/beverages" element={<ProtectedRoute><BeverageManagement /></ProtectedRoute>} />
           <Route path="/management/taps" element={<ProtectedRoute><TapAssignment /></ProtectedRoute>} />
+          <Route path="/management/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
